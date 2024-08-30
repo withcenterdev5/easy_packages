@@ -9,6 +9,8 @@ import 'package:easy_messaging/easy_messaging.dart';
 import 'package:easy_post_v2/easy_post_v2.dart';
 import 'package:easy_report/easy_report.dart';
 import 'package:easy_storage/easy_storage.dart';
+import 'package:easy_task/easy_task.dart';
+import 'package:easy_user_group/easy_user_group.dart';
 import 'package:easychat/easychat.dart';
 // import 'package:easy_post_v2/easy_post_v2.dart';
 import 'package:easyuser/easyuser.dart';
@@ -35,7 +37,6 @@ void main() async {
           // options: DefaultFirebaseOptions.currentPlatform,
           );
 
-      UserService.instance.init();
       runApp(const MyApp());
 
       FlutterError.onError = (FlutterErrorDetails details) {
@@ -56,11 +57,27 @@ class MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
-    UserService.instance.init();
+
+    UserService.instance.init(prefixActionBuilderOnPublicProfileScreen: (user) {
+      return [
+        ElevatedButton(
+            onPressed: () {
+              ChatService.instance
+                  .showChatRoomScreen(globalContext, user: user);
+            },
+            child: const Text('Chat')),
+      ];
+    });
 
     StorageService.instance.init(
       uploadBottomSheetPadding: const EdgeInsets.all(16),
       uploadBottomSheetSpacing: 16,
+    );
+
+    TaskService.instance.init(
+      taskListActionButton: () {
+        return const UserGroupOpenListScreenButton();
+      },
     );
 
     messagingInit();

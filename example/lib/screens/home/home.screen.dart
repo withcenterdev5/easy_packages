@@ -101,6 +101,9 @@ class _HomeScreenState extends State<HomeScreen> {
                           );
                         }),
                         Text('User UID: ${user.uid}'),
+                        ChatInvitationCount(
+                          builder: (count) => Text('Invitation Count: $count'),
+                        ),
                       ],
                     ),
             ),
@@ -127,17 +130,23 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: const Text("Open Room List"),
                 ),
                 ElevatedButton(
-                  onPressed: () {
-                    UserService.instance.showUserSearchDialog(
+                  onPressed: () async {
+                    final user = await UserService.instance.showSearchDialog(
                       context,
                       exactSearch: true,
                     );
+                    if (user != null) {
+                      if (context.mounted) {
+                        UserService.instance
+                            .showPublicProfileScreen(context, user: user);
+                      }
+                    }
                   },
                   child: const Text('User Search Dialog: exact search'),
                 ),
                 ElevatedButton(
                   onPressed: () async {
-                    await UserService.instance.showUserSearchDialog(
+                    await UserService.instance.showSearchDialog(
                       context,
                       exactSearch: false,
                       itemBuilder: (user, index) => ElevatedButton(

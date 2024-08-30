@@ -27,6 +27,7 @@ class ChatRoom {
     verifiedUserOnly: 'verifiedUserOnly',
     urlForVerifiedUserOnly: 'urlForVerifiedUserOnly',
     uploadForVerifiedUserOnly: 'uploadForVerifiedUserOnly',
+    allMembersCanInvite: 'allMembersCanInvite',
     gender: 'gender',
     domain: 'domain',
   );
@@ -115,6 +116,8 @@ class ChatRoom {
   ///
   String domain;
 
+  bool allMembersCanInvite = false;
+
   /// True if the user has seen the last message. Meaning, there is no more new messages in the chat room.
   bool get iSeen => users[myUid!]?.newMessageCounter == 0;
 
@@ -138,6 +141,7 @@ class ChatRoom {
     this.verifiedUserOnly = false,
     this.urlForVerifiedUserOnly = false,
     this.uploadForVerifiedUserOnly = false,
+    this.allMembersCanInvite = false,
     required this.gender,
     required this.domain,
   });
@@ -177,6 +181,7 @@ class ChatRoom {
       verifiedUserOnly: json[field.verifiedUserOnly],
       urlForVerifiedUserOnly: json[field.urlForVerifiedUserOnly],
       uploadForVerifiedUserOnly: json[field.uploadForVerifiedUserOnly],
+      allMembersCanInvite: json[field.allMembersCanInvite] ?? false,
       gender: json[field.gender],
       domain: json[field.domain],
     );
@@ -204,6 +209,7 @@ class ChatRoom {
       field.verifiedUserOnly: verifiedUserOnly,
       field.urlForVerifiedUserOnly: urlForVerifiedUserOnly,
       field.uploadForVerifiedUserOnly: uploadForVerifiedUserOnly,
+      field.allMembersCanInvite: allMembersCanInvite,
       field.gender: gender,
       field.domain: domain,
     };
@@ -234,6 +240,7 @@ class ChatRoom {
     verifiedUserOnly = room.verifiedUserOnly;
     urlForVerifiedUserOnly = room.urlForVerifiedUserOnly;
     uploadForVerifiedUserOnly = room.uploadForVerifiedUserOnly;
+    allMembersCanInvite = room.allMembersCanInvite;
     gender = room.gender;
     domain = room.domain;
   }
@@ -267,6 +274,7 @@ class ChatRoom {
     bool verifiedUserOnly = false,
     bool urlForVerifiedUserOnly = false,
     bool uploadForVerifiedUserOnly = false,
+    bool allMembersCanInvite = false,
     String gender = '',
     String domain = '',
   }) async {
@@ -312,6 +320,7 @@ class ChatRoom {
       field.verifiedUserOnly: verifiedUserOnly,
       field.urlForVerifiedUserOnly: urlForVerifiedUserOnly,
       field.uploadForVerifiedUserOnly: uploadForVerifiedUserOnly,
+      field.allMembersCanInvite: allMembersCanInvite,
       field.gender: gender,
       field.domain: domain,
       field.createdAt: FieldValue.serverTimestamp(),
@@ -356,7 +365,13 @@ class ChatRoom {
     bool? open,
     bool? single,
     bool? group,
-    Object? lastMessageAt,
+    // bool? verifiedUserOnly,
+    // bool? urlForVerifiedUserOnly,
+    // bool? uploadForVerifiedUserOnly,
+    bool? allMembersCanInvite,
+    // String? gender,
+    // String? domain,
+    // Object? lastMessageAt,
   }) async {
     if (single == true && (group == true || open == true)) {
       throw 'chat-room-update/single-cannot-be-group-or-open Single chat room cannot be group or open';
@@ -371,6 +386,8 @@ class ChatRoom {
       if (open != null) field.open: open,
       if (single != null) field.single: single,
       if (group != null) field.group: group,
+      if (allMembersCanInvite != null)
+        field.allMembersCanInvite: allMembersCanInvite,
       field.updatedAt: FieldValue.serverTimestamp(),
     };
 
@@ -381,15 +398,27 @@ class ChatRoom {
   ///
   /// Note, that updating [updatedAt] is important to keep the order of the
   /// chat room. It is especially useful to count the number of invitations.
+  ///
+  ///
   Future<void> inviteUser(String uid) async {
     await ref.update({
       field.invitedUsers: FieldValue.arrayUnion([uid]),
       field.updatedAt: FieldValue.serverTimestamp(),
     });
+    ChatService.instance.increaseInvitationCount(uid);
     ChatService.instance.onInvite?.call(room: this, uid: uid);
   }
 
+  /// Alias for [join]. Since they have
+  /// really simmilar logic.
   Future<void> acceptInvitation() async {
+    await join();
+  }
+
+  /// Let the current user join in chat room
+  ///
+  /// If user is invited, invitation count will decrease
+  Future<void> join() async {
     if (blockedUsers.contains(myUid)) {
       throw ChatException(
         'chat-join-fail',
@@ -397,7 +426,6 @@ class ChatRoom {
             .t,
       );
     }
-
     final timestampAtLastMessage = lastMessageAt != null
         ? Timestamp.fromDate(lastMessageAt!)
         : FieldValue.serverTimestamp();
@@ -429,21 +457,20 @@ class ChatRoom {
       },
       SetOptions(merge: true),
     );
+    if (invitedUsers.contains(myUid)) {
+      await ChatService.instance.decreaseInvitationCount();
+    }
   }
-
-  /// Alias for [acceptInvitation]. Since they have
-  /// related logic.
-  Future<void> join() => acceptInvitation();
 
   Future<void> rejectInvitation() async {
     await ref.update({
       field.invitedUsers: FieldValue.arrayRemove([myUid!]),
       field.rejectedUsers: FieldValue.arrayUnion([myUid!]),
     });
+    ChatService.instance.decreaseInvitationCount();
   }
 
   Future<void> leave() async {
-    // TODO masters should not leave right away
     await ref.set(
       {
         field.users: {

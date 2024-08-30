@@ -25,7 +25,7 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
-
+    debugPrint('--> MayApp::initState() begins;');
     ChatService.instance.init();
   }
 

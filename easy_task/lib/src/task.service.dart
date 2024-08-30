@@ -29,11 +29,16 @@ class TaskService {
   Function? setLocaleTexts;
 
   bool initialized = false;
+
+  Widget Function()? taskListActionButton;
+
   init({
     Function? setLocaleTexts,
+    Widget Function()? taskListActionButton,
   }) {
     initialized = true;
     this.setLocaleTexts = setLocaleTexts;
+    this.taskListActionButton = taskListActionButton;
   }
 
   /// Show the task create screen. It can be a project creation.
