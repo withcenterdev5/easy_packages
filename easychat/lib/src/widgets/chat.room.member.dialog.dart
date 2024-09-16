@@ -89,7 +89,7 @@ class ChatRoomMemberDialog extends StatelessWidget {
           const SizedBox(height: 36),
           if (room?.masterUsers.contains(myUid) == true) ...[
             if (user.uid != myUid &&
-                room?.blockedUsers.contains(user.uid) == false) ...[
+                room?.blockedUids.contains(user.uid) == false) ...[
               const Divider(
                 height: 0,
               ),
@@ -104,12 +104,12 @@ class ChatRoomMemberDialog extends StatelessWidget {
                   ),
                 ),
                 onTap: () {
-                  room!.block(user.uid);
+                  ChatService.instance.block(room!, user.uid);
                   Navigator.of(context).pop();
                 },
               ),
             ],
-            if (room?.blockedUsers.contains(user.uid) == true &&
+            if (room?.blockedUids.contains(user.uid) == true &&
                 user.uid != myUid) ...[
               const Divider(
                 height: 0,
@@ -124,9 +124,9 @@ class ChatRoomMemberDialog extends StatelessWidget {
                     ),
                   ),
                 ),
-                onTap: () {
-                  room!.unblock(user.uid);
+                onTap: () async {
                   Navigator.of(context).pop();
+                  await ChatService.instance.unblock(room!, user.uid);
                 },
               ),
             ],

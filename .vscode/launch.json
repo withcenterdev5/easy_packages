@@ -5,40 +5,76 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Christian - iPhone 15 Pro Max - Example",
+            "name": "Example - iPhone 15 Pro Max",
             "request": "launch",
             "type": "dart",
             "deviceId": "iPhone 15 Pro Max",
             "cwd": "example",
             "program": "lib/main.dart",
-            "args": [
-                "--dart-define",
-                "DEVELOPER=christian"
-            ]
         },
         {
-            "name": "Christian - iPhone SE - Example",
+            "name": "Example - iPhone (2) - small iPhone external",
+            "request": "launch",
+            "type": "dart",
+            "deviceId": "iPhone (2)",
+            "cwd": "example",
+            "program": "lib/main.dart",
+        },
+        {
+            "name": "Example - iPhone SE",
             "request": "launch",
             "type": "dart",
             "deviceId": "iPhone SE",
             "cwd": "example",
             "program": "lib/main.dart",
-            "args": [
-                "--dart-define",
-                "DEVELOPER=christian"
-            ]
         },
         {
-            "name": "Christian - iPhone 15 Pro - Example",
+            "name": "Example - iPhone 15 Pro",
             "request": "launch",
             "type": "dart",
             "deviceId": "iPhone 15 Pro",
             "cwd": "example",
             "program": "lib/main.dart",
-            "args": [
-                "--dart-define",
-                "DEVELOPER=christian"
-            ]
+        },
+        {
+            "name": "Example - iPhone 15 Pro",
+            "request": "launch",
+            "type": "dart",
+            "deviceId": "iPhone 15 Pro",
+            "cwd": "example",
+            "program": "lib/main.dart",
+        },
+        {
+            "name": "Example - SM A750GN",
+            "request": "launch",
+            "type": "dart",
+            "deviceId": "320066b04746b53d",
+            "cwd": "example",
+            "program": "lib/main.dart"
+        },
+        {
+            "name": "Example - Emulator",
+            "request": "launch",
+            "type": "dart",
+            "deviceId": "emulator-5554",
+            "cwd": "example",
+            "program": "lib/main.dart"
+        },
+        {
+            "name": "Example - iPhone 15 Plus",
+            "request": "launch",
+            "type": "dart",
+            "deviceId": "iPhone 15 Plus",
+            "cwd": "example",
+            "program": "lib/main.dart"
+        },
+        {
+            "name": "Example - iPhone11ProMax",
+            "request": "launch",
+            "type": "dart",
+            "deviceId": "iPhone11ProMax",
+            "cwd": "example",
+            "program": "lib/main.dart"
         },
 
         {
@@ -57,6 +93,17 @@
             "request": "launch",
             "type": "dart",
             "deviceId": "iPhone SE",
+            "cwd": "easychat/example",
+            "program": "lib/main.dart",
+            "args": [
+                
+            ]
+        },
+        {
+            "name": "EasyChat - iPad Mini - Example",
+            "request": "launch",
+            "type": "dart",
+            "deviceId": "iPad mini",
             "cwd": "easychat/example",
             "program": "lib/main.dart",
             "args": [
@@ -92,78 +139,6 @@
             "program": "lib/main.dart"
         },
         {
-            "name": "Example - iPhone 15 Pro Max",
-            "request": "launch",
-            "type": "dart",
-            "deviceId": "iPhone 15 Pro Max",
-            "cwd": "example",
-            "program": "lib/main.dart"
-        },
-        {
-            "name": "Example - iPhone11ProMax",
-            "request": "launch",
-            "type": "dart",
-            "deviceId": "iPhone11ProMax",
-            "cwd": "example",
-            "program": "lib/main.dart"
-        },
-        {
-            "name": "Example - SM A045F",
-            "request": "launch",
-            "type": "dart",
-            "deviceId": "R9ATA00LMJM",
-            "cwd": "example",
-            "program": "lib/main.dart"
-        },
-        {
-            "name": "Example - iPhone 15 Plus",
-            "request": "launch",
-            "type": "dart",
-            "deviceId": "iPhone 15 Plus",
-            "cwd": "example",
-            "program": "lib/main.dart"
-        },
-        {
-            "name": "Example - iPad Air 11-inch (M2)",
-            "request": "launch",
-            "type": "dart",
-            "deviceId": "iPad Air 11-inch (M2)",
-            "cwd": "example",
-            "program": "lib/main.dart"
-        },
-        {
-            "name": "Example - iPhone 15 Pro",
-            "request": "launch",
-            "type": "dart",
-            "deviceId": "iPhone 15 Pro",
-            "cwd": "example",
-            "program": "lib/main.dart"
-        },
-        {
-            "name": "Example - iPhone SE",
-            "request": "launch",
-            "type": "dart",
-            "deviceId": "iPhone SE",
-            "cwd": "example",
-            "program": "lib/main.dart"
-        },
-        {
-            "name": "Example - SM A750GN",
-            "request": "launch",
-            "type": "dart",
-            "deviceId": "320066b04746b53d",
-            "cwd": "example",
-            "program": "lib/main.dart"
-        },
-        {
-            "name": "Example - Emulator",
-            "request": "launch",
-            "type": "dart",
-            "deviceId": "emulator-5554",
-            "cwd": "example",
-            "program": "lib/main.dart"
-        },
-        {
             "name": "EasyUser Example - iPhone 15 Pro Max",
             "request": "launch",
             "type": "dart",
@@ -196,220 +171,13 @@
             "program": "lib/main.dart"
         },
         {
-            "name": "easy_helpers",
-            "cwd": "easy_helpers",
-            "request": "launch",
-            "type": "dart"
-        },
-        {
-            "name": "easy_helpers (profile mode)",
-            "cwd": "easy_helpers",
+            "name": "Realtime Database - iPhone 15 Pro Max",
+            "cwd": "easy_realtime_database/example",
             "request": "launch",
             "type": "dart",
-            "flutterMode": "profile"
-        },
-        {
-            "name": "easy_helpers (release mode)",
-            "cwd": "easy_helpers",
-            "request": "launch",
-            "type": "dart",
-            "flutterMode": "release"
-        },
-        {
-            "name": "easy_locale",
-            "cwd": "easy_locale",
-            "request": "launch",
-            "type": "dart"
-        },
-        {
-            "name": "easy_locale (profile mode)",
-            "cwd": "easy_locale",
-            "request": "launch",
-            "type": "dart",
-            "flutterMode": "profile"
-        },
-        {
-            "name": "easy_locale (release mode)",
-            "cwd": "easy_locale",
-            "request": "launch",
-            "type": "dart",
-            "flutterMode": "release"
-        },
-        {
-            "name": "easy_storage",
-            "cwd": "easy_storage",
-            "request": "launch",
-            "type": "dart"
-        },
-        {
-            "name": "easy_storage (profile mode)",
-            "cwd": "easy_storage",
-            "request": "launch",
-            "type": "dart",
-            "flutterMode": "profile"
-        },
-        {
-            "name": "easy_storage (release mode)",
-            "cwd": "easy_storage",
-            "request": "launch",
-            "type": "dart",
-            "flutterMode": "release"
-        },
-        {
-            "name": "easy_task",
-            "cwd": "easy_task",
-            "request": "launch",
-            "type": "dart"
-        },
-        {
-            "name": "easy_task (profile mode)",
-            "cwd": "easy_task",
-            "request": "launch",
-            "type": "dart",
-            "flutterMode": "profile"
-        },
-        {
-            "name": "easy_task (release mode)",
-            "cwd": "easy_task",
-            "request": "launch",
-            "type": "dart",
-            "flutterMode": "release"
-        },
-        {
-            "name": "easychat",
-            "cwd": "easychat",
-            "request": "launch",
-            "type": "dart"
-        },
-        {
-            "name": "easychat (profile mode)",
-            "cwd": "easychat",
-            "request": "launch",
-            "type": "dart",
-            "flutterMode": "profile"
-        },
-        {
-            "name": "easychat (release mode)",
-            "cwd": "easychat",
-            "request": "launch",
-            "type": "dart",
-            "flutterMode": "release"
-        },
-        {
-            "name": "easyuser",
-            "cwd": "easyuser",
-            "request": "launch",
-            "type": "dart"
-        },
-        {
-            "name": "easyuser (profile mode)",
-            "cwd": "easyuser",
-            "request": "launch",
-            "type": "dart",
-            "flutterMode": "profile"
-        },
-        {
-            "name": "easyuser (release mode)",
-            "cwd": "easyuser",
-            "request": "launch",
-            "type": "dart",
-            "flutterMode": "release"
-        },
-        {
-            "name": "example (profile mode)",
-            "cwd": "easy_locale/example",
-            "request": "launch",
-            "type": "dart",
-            "flutterMode": "profile"
-        },
-        {
-            "name": "example (release mode)",
-            "cwd": "easy_locale/example",
-            "request": "launch",
-            "type": "dart",
-            "flutterMode": "release"
-        },
-        {
-            "name": "example",
-            "cwd": "easy_storage/example",
-            "request": "launch",
-            "type": "dart"
-        },
-        {
-            "name": "example (profile mode)",
-            "cwd": "easy_storage/example",
-            "request": "launch",
-            "type": "dart",
-            "flutterMode": "profile"
-        },
-        {
-            "name": "example (release mode)",
-            "cwd": "easy_storage/example",
-            "request": "launch",
-            "type": "dart",
-            "flutterMode": "release"
-        },
-        {
-            "name": "example",
-            "cwd": "easy_task/example",
-            "request": "launch",
-            "type": "dart"
-        },
-        {
-            "name": "example (profile mode)",
-            "cwd": "easy_task/example",
-            "request": "launch",
-            "type": "dart",
-            "flutterMode": "profile"
-        },
-        {
-            "name": "example (release mode)",
-            "cwd": "easy_task/example",
-            "request": "launch",
-            "type": "dart",
-            "flutterMode": "release"
-        },
-        {
-            "name": "example",
-            "cwd": "easychat/example",
-            "request": "launch",
-            "type": "dart"
-        },
-        {
-            "name": "example (profile mode)",
-            "cwd": "easychat/example",
-            "request": "launch",
-            "type": "dart",
-            "flutterMode": "profile"
-        },
-        {
-            "name": "example (release mode)",
-            "cwd": "easychat/example",
-            "request": "launch",
-            "type": "dart",
-            "flutterMode": "release"
-        },
-        {
-            "name": "example",
-            "cwd": "easyuser/example",
-            "request": "launch",
-            "type": "dart"
-        },
-        {
-            "name": "Easy Stroage - iPhone 15 Pro Max",
-            "cwd": "easy_storage/example",
-            "program": "lib/main.dart",
             "deviceId": "iPhone 15 Pro Max",
-            "request": "launch",
-            "type": "dart",
-            "flutterMode": "debug"
+            "program": "lib/main.dart"
         },
-        {
-            "name": "example (release mode)",
-            "cwd": "easyuser/example",
-            "request": "launch",
-            "type": "dart",
-            "flutterMode": "release"
-        }
+        
     ]
 }

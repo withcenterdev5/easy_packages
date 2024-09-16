@@ -1,5 +1,7 @@
 // import 'package:example/firebase_options.dart';
+// import 'package:example/firebase_options.dart';
 import 'package:example/screens/home/home.screen.dart';
+// import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:easy_locale/easy_locale.dart';
@@ -27,6 +29,16 @@ class _MyAppState extends State<MyApp> {
     super.initState();
     debugPrint('--> MayApp::initState() begins;');
     ChatService.instance.init();
+
+    test();
+  }
+
+  test() async {
+    // final FirebaseApp app = Firebase.app();
+    // FirebaseAuth.instanceFor(app: app).signInAnonymously();
+    // int ts = await getServerTimestamp();
+    // print(
+    //     'ts: \n$ts\n${ts * -1 + -10000000000000}\n${int.parse("-1$ts")}, ${DateTime.fromMillisecondsSinceEpoch(ts).toIso8601String()}');
   }
 
   @override

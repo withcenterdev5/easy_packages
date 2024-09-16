@@ -54,6 +54,10 @@ class _HomeFriendScreenState extends State<HomeFriendScreen> {
                       child: Text("Find friend"),
                     ),
                     const PopupMenuItem(
+                      value: 'blocked-users',
+                      child: Text("Blocked Users"),
+                    ),
+                    const PopupMenuItem(
                       value: 'signout',
                       child: Text("Sign Out"),
                     ),
@@ -62,17 +66,21 @@ class _HomeFriendScreenState extends State<HomeFriendScreen> {
                 onSelected: (String value) async {
                   if (value == 'profile') {
                     // Navigator.of(context).pushNamed(UserProfileScreen.routeName);
-                  } else if (value == 'signout') {
-                    UserService.instance.signOut();
                   } else if (value == 'find-friend') {
                     final user =
                         await UserService.instance.showSearchDialog(context);
                     if (user != null) {
                       if (context.mounted) {
-                        ChatService.instance
-                            .showChatRoomScreen(context, user: user);
+                        ChatService.instance.showChatRoomScreen(
+                          context,
+                          user: user,
+                        );
                       }
                     }
+                  } else if (value == 'blocked-users') {
+                    await UserService.instance.showBlockListScreen(context);
+                  } else if (value == 'signout') {
+                    UserService.instance.signOut();
                   }
                 },
                 icon: const Icon(Icons.menu),
@@ -80,27 +88,56 @@ class _HomeFriendScreenState extends State<HomeFriendScreen> {
             ],
           ),
         ),
+        Text('my uid: $myUid'),
+        const Divider(),
+        Wrap(
+          children: [
+            TextButton(
+              onPressed: () => ChatTestService.instance.invitationNotSent(
+                'jp38SPAWRDUfbHoVbIZhY1fJTDM2',
+              ),
+              child: const Text('TEST invitationNotSent'),
+            ),
+            TextButton(
+              onPressed: () async {
+                await ChatTestService.instance.createGroupChat();
+              },
+              child: const Text('createGroupChat'),
+            ),
+            TextButton(
+              onPressed: () async {
+                await ChatTestService.instance.joinGroupChat();
+              },
+              child: const Text('joinGroupChat'),
+            ),
+            TextButton(
+              onPressed: () async {
+                await ChatTestService.instance.joinOpenChat();
+              },
+              child: const Text('joinOpenChat'),
+            )
+          ],
+        ),
         Expanded(
-          child: ChatRoomListView(
-            headerBuilder: () {
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('my uid: $myUid'),
-                  const Text('@TODO: Display no of invitatations'),
-                  const Text('@TODO: top 3 invitations'),
-                  const Text(
-                      '@TODO: Display favorite friends: use easy_user_group pakcage'),
-                  const Text(
-                      '@TODO: Display all 1:1 chats: hide the favorite friends'),
-                  const Divider(),
-                ],
+          child: AuthStateChanges(builder: (user) {
+            if (user == null) {
+              return const Center(
+                child: Text('Sign in to see your friends'),
               );
-            },
-            // onChatRoomTap: (chatRoom) {
-            //   ChatService.instance.showChatRoomScreen(context, chatRoom: chatRoom);
-            // },
-          ),
+            }
+            return ChatRoomListView(
+              headerBuilder: () {
+                return const Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Divider(
+                      height: 1,
+                    ),
+                  ],
+                );
+              },
+            );
+          }),
         ),
       ],
     );

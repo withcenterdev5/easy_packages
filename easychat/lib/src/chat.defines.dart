@@ -1,0 +1,16 @@
+const String singleOrder = 'singleOrder';
+const String groupOrder = 'groupOrder';
+const String openOrder = 'openOrder';
+const String joinedAt = 'joinedAt';
+const String order = 'order';
+const String lastMessageUid = 'lastMessageUid';
+const String unreadMessageCount = 'unread-message-count';
+const String lastMessageAt = 'lastMessageAt';
+const String lastMessageDeleted = 'lastMessageDeleted';
+const String lastText = 'lastText';
+const String lastUrl = 'lastUrl';
+const String lastProtocol = 'lastProtocol';
+const String name = 'name';
+const String iconUrl = 'iconUrl';
+const String displayName = 'displayName';
+const String photoUrl = 'photoUrl';

@@ -6,6 +6,13 @@ service cloud.firestore {
       allow read, write: if false;
     }
     
+    // CHAT SETTINGS
+    match /chat-settings/{uid} {
+      allow read: if true;
+      allow write: if true;
+    }
+    
+    // CHAT ROOMS
     match /chat-rooms/{roomId} {
       function willBeSingle() {
         return request.resource.data.keys().hasAny(["single"]) 
@@ -109,6 +116,19 @@ service cloud.firestore {
           && request.resource.data.createdAt != resource.data.createdAt
       }
 
+      function isMemberByRoomId() {
+        // return roomId.matches('.+---.+') && roomId.split("---").hasAll([request.auth.uid]);
+        return roomId.split("---").hasAll([request.auth.uid]);
+      }
+
+      function onlyInvitingOtherUser() {
+        return request.resource.data.keys().hasAll(["invitedUsers"])
+                && request.resource.data.invitedUsers.size() == 1
+                && roomId.split("---").hasAll([request.resource.data.invitedUsers[0]])
+                
+
+      }
+
       // function hasOrderField() {
       //   return 
       //     'users' in resource.data.keys() &&
@@ -124,7 +144,8 @@ service cloud.firestore {
       // To secure the chat room information from the rejected users, the chat room information should maintain
       // as less information as possible. For this reason, the chat room does not store the last message.
       // Refere easychat README.md for more information.
-      allow read: if isMember() || isInvited() ||  isRejectedUser() || isOpenGroup();
+      allow get: if isMemberByRoomId() || isMember() || isInvited() ||  isRejectedUser() || isOpenGroup();
+      allow list: if isMember() || isInvited() ||  isRejectedUser() || isOpenGroup();
       allow create: if willBeOnlyMember() 
                       && willBeOnlyMaster()
                       && (
@@ -141,13 +162,14 @@ service cloud.firestore {
                 isSingleChat() 
                 && notUpdating(['single'])
                 && willBeAtMostOne('invitedUsers')
+                
             )
           ) &&
           !updatingCreatedAt()
         )
         || (
           isJoining()
-          && (isOpenGroup() || isInvited() || isRejectedUser())
+          && (isOpenGroup() || isInvited() || isRejectedUser() || isMemberByRoomId())
           && onlyUpdating(['users', 'invitedUsers', 'rejectedUsers', 'updatedAt'])
           && !isBlocked()
         )
@@ -177,6 +199,10 @@ service cloud.firestore {
               isSingleChat()
               && onlyUpdating(['lastMessageAt', 'users', 'updatedAt'])
               && sameMembers()
+              || ( 
+                onlyUpdating(['invitedUsers', 'updatedAt'])
+                && onlyInvitingOtherUser()
+              )
             )
           )
         );

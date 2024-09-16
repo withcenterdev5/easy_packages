@@ -5,7 +5,6 @@ import 'package:easychat/easychat.dart';
 import 'package:easychat/src/widgets/chat.room.blocked.users.dialog.dart';
 import 'package:easyuser/easyuser.dart';
 import 'package:flutter/material.dart';
-import 'package:easy_report/easy_report.dart';
 
 class ChatRoomMenuDrawer extends StatelessWidget {
   const ChatRoomMenuDrawer({
@@ -117,6 +116,7 @@ class ChatRoomMenuDrawer extends StatelessWidget {
                     style: Theme.of(context).textTheme.bodyMedium,
                   ),
                 ),
+                if (!room!.description.isNullOrEmpty) const SizedBox(height: 4),
                 InkWell(
                   child: Column(
                     children: [
@@ -186,7 +186,7 @@ class ChatRoomMenuDrawer extends StatelessWidget {
                     title: Text('invite more users'.t),
                     onTap: () async {
                       final selectedUser =
-                          await UserService.instance.showUserSearchDialog(
+                          await UserService.instance.showSearchDialog(
                         context,
                         itemBuilder: (user, index) {
                           return UserListTile(
@@ -199,27 +199,14 @@ class ChatRoomMenuDrawer extends StatelessWidget {
                         exactSearch: true,
                       );
                       if (selectedUser == null) return;
-                      if (room!.invitedUsers.contains(selectedUser.uid)) {
-                        throw ChatException(
-                          'already-invited',
-                          'the user is already invited'.t,
-                        );
-                      }
-                      if (room!.rejectedUsers.contains(selectedUser.uid)) {
-                        // The chat room is already rejected by the other user, we are
-                        // not showing if user rejected the invitation.
-                        throw ChatException(
-                          'already-invited',
-                          'the user is already invited'.t,
-                        );
-                      }
+
                       if (room!.userUids.contains(selectedUser.uid)) {
                         throw ChatException(
                           'already-member',
                           'the user is already a member'.t,
                         );
                       }
-                      if (room!.blockedUsers.contains(selectedUser.uid)) {
+                      if (room!.blockedUids.contains(selectedUser.uid)) {
                         throw ChatException(
                           'chat-blocked',
                           'the user is blocked from the chat room and cannot invite'
@@ -232,7 +219,38 @@ class ChatRoomMenuDrawer extends StatelessWidget {
                           'you cannot invite yourself'.t,
                         );
                       }
-                      await room!.inviteUser(selectedUser.uid);
+
+                      // Get if user is already invited
+                      final invitation = await ChatService.instance
+                          .invitedUserRef(selectedUser.uid)
+                          .child(room!.id)
+                          .get();
+                      if (invitation.exists) {
+                        dog("The user is already invited: ${invitation.value}");
+                        throw ChatException(
+                          'already-invited',
+                          'the user is already invited'.t,
+                        );
+                      }
+
+                      // Get if user is already invited and rejected the invitation
+                      final rejection = await ChatService.instance
+                          .rejectedUserRef(selectedUser.uid)
+                          .child(room!.id)
+                          .get();
+                      if (rejection.exists) {
+                        dog("The user is already rejected: ${rejection.value}");
+                        throw ChatException(
+                          'already-invited',
+                          'the user is already invited'.t,
+                        );
+                      }
+
+                      // await room!.inviteUser(selectedUser.uid);
+                      await ChatService.instance.inviteUser(
+                        room!,
+                        selectedUser.uid,
+                      );
                       if (!context.mounted) return;
                       alert(
                         context: context,
@@ -275,7 +293,7 @@ class ChatRoomMenuDrawer extends StatelessWidget {
                     itemExtent: 72,
                     itemBuilder: (context, index) {
                       return UserDoc(
-                        uid: room!.blockedUsers[index],
+                        uid: room!.blockedUids[index],
                         builder: (user) => user == null
                             ? const SizedBox.shrink()
                             : ChatRoomMemberListTile(
@@ -351,42 +369,68 @@ class ChatRoomMenuDrawer extends StatelessWidget {
                           .showChatRoomEditScreen(context, room: room);
                     },
                   ),
-                if (room!.group)
-                  ListTile(
-                    title: Text("leave".t),
-                    onTap: () async {
-                      final re = await confirm(
-                        context: context,
-                        title: Text("leaving room".t),
-                        message: Text('leaving room confirmation'.t),
-                      );
-                      if (re != true) return;
-                      room!.leave();
-                      if (!context.mounted) return;
-                      // two pops since we are opening both
-                      // drawer and room screen.
-                      Navigator.of(context).pop();
-                      Navigator.of(context).pop();
-                    },
-                  ),
+                // if (room!.group)
+                ListTile(
+                  title: Text("leave".t),
+                  onTap: () async {
+                    final re = await confirm(
+                      context: context,
+                      title: Text("leaving room".t),
+                      message: Text('leaving room confirmation'.t),
+                    );
+                    if (re != true) return;
+                    // room!.leave();
+                    if (!context.mounted) return;
+                    // two pops since we are opening both
+                    // drawer and room screen.
+                    Navigator.of(context).pop();
+                    Navigator.of(context).pop();
+                    await ChatService.instance.leave(room!);
+                  },
+                ),
               ],
               if (user != null && !user!.admin) ...[
                 if (room?.single == true || user != null)
                   ListTile(
-                    title: Text("block".t),
+                    title: Text(
+                      UserService.instance.blockChanges.value
+                              .containsKey(user!.uid)
+                          ? "unblock".t
+                          : "block".t,
+                    ),
                     onTap: () async {
-                      UserService.instance
-                          .block(context: context, otherUid: user!.uid);
+                      final re = await UserService.instance.block(
+                        context: context,
+                        otherUid: user!.uid,
+                      );
+                      if (re == true) {
+                        // re is true means blocked
+                        if (!context.mounted) return;
+                        // Pop the menu first
+                        Navigator.pop(context);
+                        // Pop the chat room next
+                        Navigator.pop(context);
+                      } else if (re == false) {
+                        // re == false means user is unblocked
+                        if (!context.mounted) return;
+
+                        Navigator.pop(context);
+                      }
                     },
                   ),
                 ListTile(
                   title: Text('report'.t),
                   onTap: () {
-                    ReportService.instance.report(
-                      context: context,
-                      documentReference: room?.ref ?? user!.ref,
-                      otherUid: user?.uid ?? room!.masterUsers.first,
-                    );
+                    throw UnimplementedError(
+                        'Report service must be updated since it only support Firestore document. Make it support the path of the document. So it can support realtime database.');
+
+                    /// TODO: Report service must accept the path of the document as String.
+                    /// TODO: Report service must have the title, content, reason, photo urls, etc. to report with enough information.
+                    // ReportService.instance.report(
+                    //   context: context,
+                    //   documentReference: room?.ref.path ?? user!.ref.path,
+                    //   otherUid: user?.uid ?? room!.masterUsers.first,
+                    // );
                   },
                 )
               ],

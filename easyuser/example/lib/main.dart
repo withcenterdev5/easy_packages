@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:easy_locale/easy_locale.dart';
 // import 'package:example/firebase_options.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -39,6 +41,7 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  String firebaseAppName = '[DEFAULT]';
   @override
   void initState() {
     super.initState();
@@ -56,9 +59,6 @@ class _MyHomePageState extends State<MyHomePage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            Text(
-              'age'.t,
-            ),
             AuthStateChanges(
               builder: (user) {
                 return user == null
@@ -75,6 +75,20 @@ class _MyHomePageState extends State<MyHomePage> {
                             onPressed: () => i.signOut(),
                             child: const Text('Sign out'),
                           ),
+                          UserField(
+                            uid: user.uid,
+                            field: 'birthDay',
+                            initialData: 4,
+                            builder: (v, r) {
+                              return ElevatedButton(
+                                onPressed: () async {
+                                  log('UserField(birthDay): ${r.path}');
+                                  await r.set((v ?? 0) + 1);
+                                },
+                                child: Text('UserField(birthDay): $v'),
+                              );
+                            },
+                          ),
                         ],
                       );
               },
@@ -87,6 +101,17 @@ class _MyHomePageState extends State<MyHomePage> {
                 );
               },
               child: const Text('User Search Dialog'),
+            ),
+            const Divider(),
+            const Text('TESTs'),
+            ElevatedButton(
+              onPressed: () async {
+                UserService.instance.signOut();
+                final String uid =
+                    await UserTestService.instance.createTestUser();
+                log('loginOrRegister uid: $uid');
+              },
+              child: const Text('loginOrRegister on 2nd Firebase'),
             ),
           ],
         ),

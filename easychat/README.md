@@ -1,66 +1,79 @@
 # EasyChat
 
-EasyChat offers everything you need to build a chat app. With the EasyChat package, you can easily add a full-featured, attractive chat function to your existing app.
 
-For your information, EasyChat:
-
-- Uses Firestore for chat room management for efficiency,
-- Utilizes Realtime Database for cost-saving measures like managing chat messages and tracking new message counts,
-- Supports push notification subscriptions and sending,
-- Enables photo sharing, file transfers and URL previews, among others,
-- Provides everything needed for chat functionality,
-- Comes with a beautiful UI/UX by default,
-- Is optimized for use in large-scale chat applications.
+This `easychat` package offers everything you need to build a chat app. With this package, you can easily add a full-featured, attractive chat function to your existing app.
 
 - [EasyChat](#easychat)
-  - [TODO](#todo)
-  - [Overview](#overview)
-  - [Install](#install)
-    - [Security Rules](#security-rules)
-      - [Firestore Security Rules](#firestore-security-rules)
-      - [Realtime Database Security Rules](#realtime-database-security-rules)
-    - [Index](#index)
-      - [Firestore index](#firestore-index)
-      - [Realtime Database index](#realtime-database-index)
-  - [Example](#example)
+- [Terms](#terms)
+- [TODO](#todo)
+- [Why Realtime Database](#why-realtime-database)
+- [Installation](#installation)
+  - [Secuirty rules](#secuirty-rules)
+    - [Realtime Database Security Rules](#realtime-database-security-rules)
+    - [Storage Rules](#storage-rules)
+    - [Firestore Rules](#firestore-rules)
+    - [Firestore Indexes](#firestore-indexes)
   - [Initialization](#initialization)
-  - [Logic](#logic)
-  - [User database](#user-database)
-  - [Chat Database](#chat-database)
-    - [Chat room database struture](#chat-room-database-struture)
-    - [Chat message database structure](#chat-message-database-structure)
-    - [Chat room security](#chat-room-security)
-    - [Cost of Firestore](#cost-of-firestore)
-    - [Chat message database struture (RTDB)](#chat-message-database-struture-rtdb)
-  - [Group Chat and 1:1 Chat](#group-chat-and-11-chat)
-  - [Masters](#masters)
-  - [Chat invitation](#chat-invitation)
-    - [Database for chat invitation](#database-for-chat-invitation)
-    - [How to use it](#how-to-use-it)
-  - [Password](#password)
-  - [Development Guideline](#development-guideline)
-    - [Init the chat service](#init-the-chat-service)
-    - [Opening chat room create in main.dart](#opening-chat-room-create-in-maindart)
-    - [Chat to admin](#chat-to-admin)
-      - [1:1 chat with Admin](#11-chat-with-admin)
-      - [Group chat with multiple admins](#group-chat-with-multiple-admins)
-  - [chatRoomActionButton](#chatroomactionbutton)
-  - [onSendMessage CallBack](#onsendmessage-callback)
-  - [onInvite Callback](#oninvite-callback)
-  - [newMessageBuilder](#newmessagebuilder)
-  - [Chat Room Blocking](#chat-room-blocking)
-    - [Group Chats with blocked users](#group-chats-with-blocked-users)
-  - [Chat Room Logic Diagrams](#chat-room-logic-diagrams)
-    - [Logic for Creating Group Chat](#logic-for-creating-group-chat)
-    - [Logic for Creating/Opening Single Chat](#logic-for-creatingopening-single-chat)
-    - [Logic for Opening Chat Room](#logic-for-opening-chat-room)
-    - [Logic for Inviting User in Group Chat](#logic-for-inviting-user-in-group-chat)
-    - [Process for Accepting/Rejecting Chat Request/Invitation](#process-for-acceptingrejecting-chat-requestinvitation)
-    - [Logic for Blocking User in Group Chat](#logic-for-blocking-user-in-group-chat)
-  - [Known issues and Common problems](#known-issues-and-common-problems)
+- [Dependencies](#dependencies)
+- [Logics](#logics)
+  - [Group chat room creation](#group-chat-room-creation)
+  - [Protocol](#protocol)
+  - [Chat invitation and delete invitation](#chat-invitation-and-delete-invitation)
+  - [Chat message sending](#chat-message-sending)
+  - [Ordering](#ordering)
+  - [Counting the invitation](#counting-the-invitation)
+- [Database Strucutre](#database-strucutre)
+  - [Chat room](#chat-room)
+  - [Chat message](#chat-message)
+  - [Chat join](#chat-join)
+  - [Chat setting](#chat-setting)
+    - [Saving unread number of messages.](#saving-unread-number-of-messages)
+    - [Changing the chat room name](#changing-the-chat-room-name)
+    - [Saving push notifications](#saving-push-notifications)
+  - [Chat Room Leaving](#chat-room-leaving)
+  - [Invited, Rejected Users](#invited-rejected-users)
+  - [Chat Blocking](#chat-blocking)
+  - [Server timestamp](#server-timestamp)
+- [Widgets](#widgets)
+  - [Displaying chat room information](#displaying-chat-room-information)
+  - [ChatInvitationCounter](#chatinvitationcounter)
+  - [ChatInvitationListView](#chatinvitationlistview)
+- [Coding Guideline](#coding-guideline)
+  - [How to get server timestamp](#how-to-get-server-timestamp)
+- [Tests](#tests)
+  - [Invitation not sent protocol test](#invitation-not-sent-protocol-test)
+- [Known Issues](#known-issues)
+
+# Terms
+
+- `Required`: If it is used with a field description, it means the field must exists in the data always.
+- `Optional`: If it is used with a field description, it means the field may exists or may not be exists depending on the situatoin.
+- `Rear exception`: An exception that should not occure during normal app usage. For instance, the user always need to be a chat room member to send a message. There is no change for any user can send message if they are not a member. If they are not a member of the chat room, they should be able to open, or once they open the chat room they need to become the member, or there must be an error on the chat room screen. So, they never have a change to send a message if they are not a member. In this case, we may still throw an excpetion with comment of `rear exception`. And this kind of exception should not be handled to display to a user. But may be used for a debug or error reporting system like `Firebase Crashlytics`.
 
 
-## TODO
+
+
+# TODO
+
+- Group chat crud workflow
+  - invite
+  - list
+- Open chat crud
+  - invite
+  - list
+- Listing my chat rooms by single, group, open
+- Listing open chat room list
+- Upload
+- url preview
+- Leaving
+- Blocking
+- push notification (subscription, and receiving messages)
+
+- TODO:
+  - How should we order Open Chat? Should we add a field called openAt?
+
+
+
 
 - Support: `verifiedUserOnly`, `urlForVerifiedUserOnly`, `uploadForVerifiedUserOnly`.
 - Support: password.
@@ -71,635 +84,427 @@ For your information, EasyChat:
   - want to chagne the name of the chat room when the chat room name or photo are not set properly or the other user name is not set properly.
 - Support: master can invite another user as master.
 - Support: the chat room invitation as optional. So, users can be invited directly without invitation.
+- Support: Favorite chat friend. Display favorites chat friend in horizontal carousel view.
 - Example: Create full featured chat example
+- Document: Add the whole screenshot of the chat screens and functions.
+- Document: Write complete document
 
 
 
-## Overview
+# Why Realtime Database
 
-- User must login to use any of the chat functionalities.
 
-## Install
+For your information on `easychat` history:
 
-Add `easychat` into your `pubspec.yaml`
+- We built this package using firestore 4 years ago. Since then we continously updating this package as a part of [fireflutter](https://github.com/thruthesky/fireflutter/tree/v-2024-07-08) package.
+- Recently in 2024, we decided to use realtime database because the package built with firestore is expensive. It's not for a big sized application.
 
-```sh
-% flutter pub add easychat
+- So, we built it in realtime database in [fireflutter version 4.x.x](https://github.com/thruthesky/fireflutter/tree/v-2024-07-08).
+  - realtime database is much cheaper,
+  - simpler,
+  - faster
+
+- Then, sometime later in mid 2024, we found out that developers are hesitating to use the realtime database. Developers who use Firebase are more pond of Firestore over Realtime Database. There are more chance to filter information in chat room. To give easy to developers, So, we decided to put chat room information in Firestore. And the chat message remains in realtime database. We named it as `easychat` with the version `0.0.x`.
+  - Soon after we realized that there is no easy solution to keep the data safe.
+    - The chat room user information is in Firestore and the chat room messages are in Realtime Database. To secure the chat room message, the user list of the chat room must be in realtime database, but it is in Firestore.
+      - We have thought of the solutions;
+        - Creating a cloud function to mirror the user list from firestore to realtime database is not an ideal because (1) It gives burden to developers to install the cloud function. we can make it Firebase Extension, but still it's an extra work. (2) The speed of reactiveness it a bit slow. When user enter the chat room, the user list is not mirrored from firestore to rtdb quickly.
+        - Security rules adjsutment;
+          - We found out some possible senarios to make it work by tweeking the security rules and client codes. But they are not so simple and clean. The one of the reason why we moved from realtime database to firestore is because we wanted to give other developers to feed easy. And adjusting with the security rules goes in even more complicated logic.
+
+- For the reason above, we go back to the realtime database again to make it more fast and scalable. When the scalability of cost, the realtime database is the best choice.
+
+
+
+# Installation
+
+## Secuirty rules
+
+### Realtime Database Security Rules
+
+
+```json
+// easychat package security rules.
+"chat": {
+  "-info": {
+    "timestamp": {
+      ".read": true,
+      ".write": true,
+    }
+  },
+  "invited-users": {
+    ".read": true,
+    ".write": true
+  },
+  "rejected-users": {
+    ".read": true,
+    ".write": true
+  },
+  "joins": {
+    ".read": true,
+    ".write": true
+  },
+  "messages": {
+    "$room_id": {
+      ".read": true,
+      ".write": true,
+      ".indexOn": ["protocol"]
+    }
+  },
+  "rooms": {
+    ".read": true,
+    ".write": true
+  },
+  "settings": {
+    ".read": true,
+    ".write": true
+  }
+}
 ```
 
 
-### Security Rules
 
-#### Firestore Security Rules
+### Storage Rules
 
+### Firestore Rules
 
-#### Realtime Database Security Rules
+`easychat` uses the firestore for some functionalities like reporting the user or chat rooms.
 
-
-### Index
-
-#### Firestore index
-
-#### Realtime Database index
-
-
-
-
-
-## Example
-
-- See `example/lib/main.dart`.
-
-
+### Firestore Indexes
 
 ## Initialization
 
-- You should initialize the `ChatService`. See more on [Developer Guideline](#development-guideline).
+To use easy chat, system must initialize the ChatService:
 
 ```dart
 ChatService.instance.init();
 ```
 
-## Logic
+# Dependencies
 
-- User must sign in to use any of the chat features.
-  - You must be sure that the user sign in first before using the chat screen. Or an error may appears on the screen.
+- To invite other users, it needs the search users by name. To achevie this, it uses `easyuser` package.
 
-## User database
 
-`easychat` gets user data from `/mirror-users/<uid>/` node in realtime database. So, your app needs to save your display name and photo url in this node. If your app uses diferent database structure, then simply copy the user's data into `/mirror-users/<uid>/` node.
+# Logics
 
-For your information, `easychat` uses `easyuser` package to manage the user's data. You don't have to install this package as the dependency of your app. It's not required but recommended to understand how `easyuser` package works.
+## Group chat room creation
 
+- When the login user creates chat room
+  - The user uid is saved in users field. It does not mean that the user is automatically joined.
+  - The package will call the `join` function for the user to join the room when the user enters chat room for the first time. And it creates the `/chat/joins` relation.
 
-## Chat Database
 
-### Chat room database struture
 
-- `/chat-rooms/{roomId}` is the document of chat room information. Chat room documents are saved in Firestore.
 
-- the `room id` has a triple-hypen(`---`) if it's a 1:1 chat.
+## Protocol
 
-- `name` is the name of the chat room.
+- What is protocol?
+  - Mostly, chat messages are delivering texts and photos. But it can deliver a special message by the system(chat package). It's called a protocol message.
+  - When the other app(user) receives the protocol message, the app can react based on the protocol.
+  - For instance, when a user leaves the chat room, the chat package delivers a chat protocol of leaving. then the other app that receives the protocol message can display "Xxx left" on the screen.
 
-- `description` is the description of the chat room.
+- Why
+  - To display who comes in the chat room
+  - To display who leaves from the chat room
+  - To display the invitation was not sent to the chat room creator of the 1:1 chat.
 
-- `users` field is a Map that has user's uid as key. And the value of the user is another Map that has key/value for sorting/listing the chat rooms of each user. See the `chat.room.user.dart` for the details of fields.
-  - All chat room users(members) exists in this Map whether it is a 1:1 chat or a group chat.
+- How
+  - You can create your own protocol if you want.
 
-- `invitedUsers` field has the list of invited user's uid. They cannot enter the chat room, until they confirm it in the app.
+- Example
+  - See the example of `invitation-not-sent` protocol message.
 
-- `rejectedUsers` field has the uid list of the rejected users from the invitation. Once the user rejected, his uid is moved from `invitedUsers` to `rejectedUsers`. In this way, the rejected users will not see the invitation in the chat list any more and the inviter cannot invite anymore.
 
-- `blockedUsers` is the uid list of blocked users by masters.
+## Chat invitation and delete invitation
 
-- `masterUsers` is the uid list of master user. See [Masters](#masters)
 
-- `createdAt` is the Firestore Timestamp when the chat room created.
+- For single chat, when the chat room creator creates the chat room, it will not send the invitation automatically.
+  - Instead, it will send a `invitation-not-sent` message automatically.
+- When the creator sends a message to the other user,
+  - The invitation will be sent and the `invitation-not-sent` message will be deleted.
 
-- `updatedAt` is the Timestamp when the chat room information updated.
+```mermaid
+flowchart TB
+ChatRoomScreen(["ChatRoomScreen\n(Open Chat Room Screen)"])
+  ChatRoomScreen ==> isSingleChat
+  chatRoomCreated =="NO"==> createChatRoom
+  createChatRoom ==> joinChatRoom
+  joinChatRoom ==> sendInvatationNotSentMessage
+  MessageListView ==> isInvitatioNotSetMessage
+  isInvitatioNotSetMessage =="YES"==> deleteInvitationNotSent
+  isSingleChat --"NO"--> node_1
+  node_2 --> chatRoomCreated
+  isSingleChat --"YES"--> node_2
+  chatRoomCreated --"YES"--> node_3
+  node_3 --> node_4
+  sendInvatationNotSentMessage --> node_4
+  node_1 --> node_4
+  node_5 --> MessageListView
+  ChatRoomScreen2 --> node_5
+  deleteInvitationNotSent --> node_6
+  isInvitatioNotSetMessage --"NO"--> node_6
+  isSingleChat{"Is room null?"}
+  chatRoomCreated{"Does chat room exist?"}
+  createChatRoom[["Create single chat room"]]
+  joinChatRoom[["Join single chat room"]]
+  sendInvatationNotSentMessage[["Send #39;invitation-not-sent#39; message"]]
+  ChatRoomScreen2(["ChatRoomScreen\n(Sending the first message)"])
+  MessageListView[/"User sends the first message"/]
+  isInvitatioNotSetMessage{"Does #39;invitation-not-sent#39;\nmessage exist?"}
+  deleteInvitationNotSent[["Delete #39;invitation-no-sent#39;"]]
+  node_1["No message will be sent"]
+  node_2[["Attempt to load Chat Room"]]
+  node_3["No message will be sent"]
+  node_4(["End"])
+  node_5[["Open the ChatRoom\n(Get Chat Room)"]]
+  node_6(["End"])
+```
 
-- `open` if it is set to true, the chat room is open chat. So, it is listed in the open chat rom list and anyone can join the chat room without invitation.
 
-- `hasPassword` is set to true if the chat room has a password. See [Password](#password)
+- The invitation-not-sent protocol message is created when the chat room creator creates the 1:1 chat room. And it needs to be deleted after the first message is sent.
+- If the invitation-not-sent protocol message appears even after the invitation has sent, it's confusing. That's why it needs to be deleted.
+- But why the code is like in `ChatService.instance.deleteInvitationNotSentMessage`?
+  - If another query made on the same node of the chat masssage list view, it will change(affect) the query of the chat message list view. That's why it does not query, but checks the index and the message protocol. And if it's the 'invitation-not-sent' protocol, it deletes the message.
 
-- `single` - is true when the room is single chat
+For invitation ordering, it is using negative of Server timestamp to give more importance to later invitations. This is to prevent the new invitation be overlooked and to prevent it on being buried by other earlier invitations.
 
-- `group` - is true when the room is group chat
+## Chat message sending
 
-- `open` - is true when the room is open group chat.
+- When a chat message (including chat protocol message) is sent by any one among the chat room users, all the chat join data of the chat room users will be updated along with the chat message information.
 
-- `gender` - If it is 'M', only males can joins the chat room. If it is 'F', only femails can join the chat room (NOT SUPPORTED, YET)
 
-- `domain` - It is the domain of the chat room. It is for a grouping chat rooms. It can be the name of the app.
-  - For instance, There are two different apps: A and B. And the two apps are using same Firebase project.
-    - And the developer may want to display only the chat rooms that were created by app A in the app A.
-  - The domain can be initlized by `init` and will be set to the chat room that are created by the app.
-    - And it's upto you how you use it.
+## Ordering
 
-
-
-### Chat message database structure
-
-- `/chat-messages/<room-id>` is the path of chat room messages. It is saved in Realtime Database.
-
-
-
-
-### Chat room security
-
-- Chat room information must not be public. Only members and invited users, and the rejected users read it.
-  - Invite users are included to read the chat room information NOT because once is was invited, but because there is no easy way of displaying the list of chat rooms that the user has rejected.
-  - To secure the chat room information from the rejected users, the chat room information should maintain as less information as possible. For this reason, the chat room does not store the last message.
-  - So, to display the last chat message on chat room list, the package listens the last message of the chat room.
-
-
-- Security rules for open chat;
-  - The principle of the security for blocked users.
-    - It allows `blocked users` to read the `open chat room`.
-      - **Because**; any one can read the chat room information. If the blocked user simply logs-out and logs-in another user, and he is able to read the chat room information. Then, what's the use of blocking blocked users not to read the `open chat room` information.
-    - For 1:1 chat rooms and grup chat rooms, they have invitation mechanism and the user needs to be invited to read the chat room.
-
-**[IMPORTANT!]**
-- For single chat rooms, it is important to secure the room to be used only by the users involved (user and other user). To do that, `strictlyFor` is added to fields for security rule, which contains the uids of users involved. Both user can leave the chat room.
-
-  - For leaving, there are multiple scenarios to handle.
-
-    - User A left, User B stayed (1)
-      - When User B chatted the room;
-        - it will invite A to join room. We know what to do because this similar on how single chat begins.
-    
-    - User A left, User B stayed (2)
-      - When User A wants to chat to User B
-        - QUESTION: What should happen if User B didn't invite User A? We cannot simple put User A as Member because it violates the idea of Invitations.
-
-    - Both Users left
-      - When User A want to chat to user B,
-        - Can't we allow User A to join room...? This can be against to our idea if we simply put User A as Member, because user A will see chat messages (or old messages) of room that did not invited her. (Supposedly, when you leave, you are no longer allowed to read, unless you are invited or a member.)
-        - To explain the problem, take note that User A (and User B as well) is no longer member of the room. Why should we allow User A to simply join the room, without invitations, in a private chat room?
-
-
-### Cost of Firestore
-
-- Firestore is more expensive compared to Realtime Database.
-  - In the previous version, we were able to build the complete chat functionality with Realtime Database, but you(developers) don't like it. That's why we converted it to Firestore. Well, it costs more.
-  - We have plan to customize on costy parts of Firestore chat rooms, and share the chat room data management with Realtime Database.
-  - For now, when theere is a chat message, chat room updates.
-    - In chat room list screen and chat room screen, the chat room document are listened(subscribed) for realtime updates. And it will be a bit costy.
-    - If you have millions of users and if it costs, let us know. We will hurry to customize it for low cost.
-
-### Chat message database struture (RTDB)
-
-For the speed and cost efficiencies, the chat messages are saved under `/chat-messages/{roomId}` in Realtime Database
-
-
-- `id` is the id of the chat message. NOTE, that this id is not saved in the database. It is used in the client side only.
-
-- `roomId` is the room id.
-
-- `uid` is the chat message sender uid.
-
-- `createdAt` is the date time of the chat message creation.
-
-- `updateAt` is the date time of the chat message edition.
-
-
-- `order` is the chat message list order.
-
-
-- `text` is the text of the chat message.
-
-- `url` is the url of photo or file of the chat message.
-
-- `deleted` is true when the message is deleted. if the message is deleted, then text, url, url preview values will be deleted.
-
-- When sending a chat message, if the text contains a URL, the site information is displayed for previewing. The appropriate values are stored in the following fields below the message:
-  - `previewUrl` - URL
-  - `previewTitle` - Title
-  - `previewDescription` - Description
-  - `previewImageUrl` - Image
-
-
-- `replyTo` is the chat message that the current message is replied to.
-
-
-
-
-
-## Group Chat and 1:1 Chat
-
-- `1:1 chat` is also called `single chat`.
-- For single chat, `single` field goes true. For gropu chat, `group` field goes true.
-- The logic between `single` and `group` chat are very much the same.
-
-
-
-## Masters
-
-The one who create chat room automatically becomes a master. And he can add another user as a master.
-
-## Chat invitation
-
-It really happened to one of my own projects that someone sent very bad words to many other users that he does not know. And he ruined the app. So, we have a special feature to prevent this. And this feature is optional.
-
-- Chat invitation is an optional.
-  - It can be disabled by default with the option that allows each user to enable it.
-  - Or it can be enabled by default with the option that each user to disable it.
-
-- If it is enabled, then the user must accept the invitation to enter the chat room.
+- Since the realtime database has no filtering, it needs multiple order fields to display items in order.
   - For instance,
-    - A sends a chat message to B for the first time while creating the chat room,
-      - then B's uid will be added to `invitedUsers`
-        - and a push message should be sent to B.
-      - and the chat message is normally saved in the chat room.
-    - On B's screen, all the chat room that has B's uid in `invitedUsers` will be displayed on top of the chat list. And B will notice that he is invited.
-      - If B accepts the invitation, B's uid will be moved from `invitedUsers` to `users` and normal chat continues.
+    - singleOrder
+    - groupOrder
+    - openOrder
+    - order
 
+- The order field must have negative millisecond timestamp value to display in reverse order.
 
-### Database for chat invitation
+- The milliseconds has 13 digits like `1000000000000`
+  - It negates the time like `-1000000000000`. This is the order value. So, the chat rooms are listed in reverse.
+  - If the chat room has new messages, then we add `-1` (by adding `-10000000000000` - 14 digits) infront of the order. Meaning, it becomes like `-11000000000000`. If the order begins with `-11`, then it is a chat room that has new message. if the user have seen(open) the chat room, then remove the front `-1` by dividing 10.
 
-- It uses `easy_setting_v2` package to save the `chatInvitationCount`.
+- The logic of updating order #1. This logic is a bit complicated but performs better because it write the data immediately to server with client time which more likely works as expected. Then it corrects the time silently.
+  - 1. Save the negative timestamp value from client time to the order field.
+  - 2. Read the time of `updatedAt` from the chat room data (or chat join data).
+  - 3. Correct the order with server time.
+  - 4. Update the order of chat joins.
 
-- `/chat-settings/<uid>/chatInvitationCount`: this field has the number of chat inivitation. This field is open to anyone.
-  - This value of user B is updated when
-    - A invites B
-    - B rejects
-    - B accepts
-  - The `chatInvitationCount` is updated inside the following methods of `ChatRoom` model.
-    - `inviteUser`
-    - `acceptInvitation`
-    - `rejectInvitation`
-  - The `chatInvitationCount` is reset with actual number of invitation every time when app starts. So, if something goes wrong, it will correct by itself.
+- The logic of updating order #2. Simple. And believe the performance is not noticible.
+  - 1. Write a sample time data to the realtime database.
+  - 2. Get the time
+  - 3. Use it.
 
 
-### How to use it
 
-- Initialize the chat service and it will automatically work.
-  - While its initialization, it will reset the number of invitation for its own correction since the security rules are open, it may go wrong and it needs correction. It only works once every app start.
+## Counting the invitation
 
+- It simply gets the all the invitation data and count it because the realtime database is fast and cheap.
+  - Before it keeps track of the number of invitation a field of a document when it was based on firestore.
 
-- To display the count(number) of all invitations;
-  - Use `ChatInvitationCount` widget.
 
-
-## Password
-
-NOTE: Password is not supported, yet.
-
-The password must kept in secret by the Security rules. Then, how the user can join the chat room without the help of backend? Here is a solution.
-
-- Since the password must be secured for reading, the password must not be saved in chat room document.
-- So, it is saved under `/chat-room/{roomId}/chat-room-meta/private` document.
-- And, client cannot read the password and when the user enters the password, how the client can check if the password is correct or not?
-
-The solution is that,
-
-- The user will save the password in `/users/{uid}/user-meta/private {chatRoomPassword: ...}`
-- And user tries to join the room and in the security rule,
-  - Security rules is the one to check if the password in user meta and in the chat private are the same.
-    - If they are the same, then the user can enter the chat room.
-
-This is the way how it can compare the chat password.
-
-
-
-
-
-
-
-## Development Guideline
-
-
-
-### Init the chat service
-
-- You need to initialize the chat service as early as the app boots.
-
-```dart
-ChatService.instance.init(
-  //
-)
-```
-
-### Opening chat room create in main.dart
-
-```dart
-class MyAppState extends State<MyApp> {
-  @override
-  void initState() {
-    SchedulerBinding.instance.addPostFrameCallback((timeStamp) {
-      ChatService.instance.showChatRoomEditScreen(globalContext);
-    });
-    // ...
-  }
-  // ...
-}
-```
-
-### Chat to admin
-
-#### 1:1 chat with Admin
-
-- To chat with the admin or the developer, you can open a 1:1 chat room.
-
-- This is good for an app that has only one admin(or representitive) to entertain the customers(clients) inquery.
-
-- It is a simple trick to `chat with admin`.
-  - Simply add `Chat to admin` menu button in the app, then when the button is being pressed, simply open a chat room with user model of the admin.
-    - You can pass the user model to `ChatService.instance.showChatRoomScreen(user: ...)`.
-
-```dart
-UserDoc(
-  uid: 'h1JVPqCO4mNroGLAklc8AV45XB82',
-  builder: (admin) => ListTile(
-    title: Text('Inquiry to Admin'.t),
-    onTap: () =>
-        ChatService.instance.showChatRoomScreen(
-      context,
-      user: admin,
-    ),
-  ),
-),
-```
-
-#### Group chat with multiple admins
-
-This feature is not supported, yet.
-
-- ~~If there are many admins who want to participate in the customer care chat, list all the uid of admins.~~
-- ~~then, create a group chat room with the list of admins and the login user.~~
-
-## chatRoomActionButton
-
-
-
-You can add extra button on the header in chat room.
-The `chatRoomActionButton` contains the chat room information.
-and accepts a Function that return a widget.
-The return widget will be display in the action button.
-
-Usage: (e.g. adding extra icon on the chat room header)
-
-```dart
-    ChatService.instance.init(
-      chatRoomActionButton: (room) => IconButton(
-        onPressed: () {
-          /// do some state
-        },
-        icon: const Icon(Icons.notifications),
-      ),
-    );
-```
-
-## onSendMessage CallBack
-
-Using `onSendMessage` is a callback after the message is sent.
-It contains the `ChatMessage` information and the `ChatRoom` information.
-
-Usage: (e.g. push notification to other users in the chat room)
-
-You may also use `PushNotificationToggleIcon` widget which came from `easy_messaging` package. It display a toggle push notification icon.
-and make a subscription to rtdb using the room id as subscriptionName.
-The path is `fcm-subscriptions/$subscriptionName/$userId`.
-By default `pushNotificationToggleIcon` display enable icon when it is set to true, otherwise false.
-
-To reverse this we can set `reverse: true`. Which display a disable icon when it is set to true, otherwise false. With this we can exclude Subscribers from push notification.
-
-Why:
-To show the (push-notification) icon is enabled when value in database is set to null. And to show it disabled when the value in database is set to true.
-
-The original (or without reverse) is, push notification icon shows enabled when value in database is set to true, otherwise disabled.
-
-Purpose:
-When a user enters chat room, there is no default value for the push-notification-subscription. As usual chat app goes, the user subscribes the chat room automatically when he enters the chat room.
-
-To achieve this, when user enters chat room (but didn't do anything to subscribe), since the default is that user should receive notification, the user is considered subscribed and the value saved is null. The push notification icon will show that the user is subscribed (or enabled). If the user taps the push notification to unsubscribe, the value in database is set to true (which means the user is unsubscribed and the push notification icon will be disabled).
-
-How:
-This logic goes together with the following code snippet;
-
-- `uids`: This is a list of uids of the whole users in the chat room.
-- `excludeSubscribers`: If it is set to true, the push-notification will be delivers to the users of `uids` except who subscribed.
-
-So, for the case of chat-room-push-notification, if user subscribed, the push-notification-icon appears as disabled(un-subscribed). Hence, the user who unsubscribed are actually subscribed and they (who unsubscribed) are excempted and will not get push-notification.
-
-
-```dart
-    ChatService.instance.init(
-      /// push notification toggle icon in reverse
-      chatRoomActionButton: (room) => PushNotificationToggleIcon(
-        subscriptionName: room.id,
-        reverse: true,
-      ),
-      onSendMessage: (
-          {required ChatMessage message, required ChatRoom room}) async {
-        /// remove current user uid
-        final uids = room.userUids.where((uid) => uid != myUid).toList();
-        if (uids.isEmpty) return;
-        /// send push notification to remaining uid
-        /// using sendMessageToUid along with subscriptionName and
-        /// excludeSubscribers set to `true` will exclude the uids if
-        /// their subscription to room id is set to true.
-        MessagingService.instance.sendMessageToUids(
-          uids: uids,
-          subscriptionName: room.id,
-          excludeSubscribers: true,
-          title: '{name} sent you a message'.tr(args: {'name': my.displayName}),
-          body: '${message.text}',
-          data: {"action": 'chat', 'roomId': room.id},
-        );
-      },
-    );
-```
-
-## onInvite Callback
-
-The `onInvite` callback is triggered after a user was invited to the chat room.
-This is called from `ChatRoom` -> `inviteUser` method.
-
-Usage: (e.g. push notification to inform the other user of invitation)
-
-```dart
-ChatService.instance.init(
-      onInvite: ({required ChatRoom room, required String uid}) async {
-        MessagingService.instance.sendMessageToUids(
-          uids: [uid],
-          title: '{name} invited you to join a chat room'.tr(args: {
-            'name': my.displayName,
-          }),
-          body: 'You got chat room invite'.t,
-          data: {
-            "action": 'chatInvite',
-          },
-        );
-      },
-    );
-```
-
-## newMessageBuilder
-
-The `ChatNewMessageCounter` is for displaying the number of new message of the whole chat rooms.
-
-If you want to display the number of new messages of each chat room, you can use `newMessageBuilder` builder.
-
-
-## Chat Room Blocking
-
-Master(s) can block a user. Then the user is kicked out and cannot enter the chat room again.
-
-This is only applicable to group chats, for open or not open, since the user can block another user directly.
-
-
-### Group Chats with blocked users
-
-User can be blocked as itself or blocked in a chat room.
-
-When user blocks other user (the account itself), the rooms should cover/hide the chat messages of the blocked user.
-
-## Chat Room Logic Diagrams
-
-### Logic for Creating Group Chat
-
-```mermaid
-
-flowchart TD
-  start([Start\nUser must be logged in])
-  --> createChatRoom[/User Open Chat Room\nCreate Screen/]
-  --> userEnter[/User enter details of the chat room\nincluding name, description or if the room is open chat/]
-  --> saveChatRoom[Save]
-  --> saveToDb[(System saves the\nchatroom into\nFirestore)]
-  --> showChatRoom[/System shows chat room to user\nwith input box, menu etc/]
-  --> final([End\nUser can do anything in Chat Room])
-
-```
-### Logic for Creating/Opening Single Chat
-
-```mermaid
-
-flowchart TD
-  start([Start])
-  --> userLook[User looks for a\n user to chat]
-  --> userChatOpen[/User open single chat\nor tapped `CHAT` /]
-  --> openChatRoom[[Open Chat Room Dialog\nshowChatRoomDialog]]
-  --> userClosed[/User closed group chat/]
-  --> final([End\n])
-```
-
-### Logic for Opening Chat Room
-
-- `ChatService.instance.showChatRoomScreen` can open `ChatRoomScreen`.
-  - You may call `ChatRoomScreen` directly from your app.
-
-
-```mermaid
-
-flowchart TD
-  start([Start\nChatRoomScreen])
-    --> LOAD{Load Chat Room}
-      LOAD--success--> SET_CHAT_ROOM[Set Current Chat Room]
-      LOAD--fail(permission-denied)--> isSingleChatRoom{1:1 chat?}
-      
-  isSingleChatRoom --false--> dontShowAboutChatRoom([ERROR: No Permission])
-    isSingleChatRoom --true--> CREATE_SING_CHAT[Attempt to create\n1:1 chat room]
-  CREATE_SING_CHAT --> SET_CHAT_ROOM
-  SET_CHAT_ROOM --> SEND_MESSAGE[/User entered text and url\nand pressed `SEND`/]
-  --> isSingle{single\nchat?}
-  isSingle--false--> userCanDoOther[User may now do other things\nSend another message\nView Menu\netc.]
-  isSingle--true--> otherUserInMembers{otherUserUid is\nin members?}
-  otherUserInMembers --true--> userCanDoOther
-  otherUserInMembers --false--> inviteOtherUser[System invites\nOther User]
-  inviteOtherUser --> userCanDoOther
-  --> SEND_MESSAGE
-
-```
-
-### Logic for Inviting User in Group Chat
-
-User A wants to invite User B in a group chat.
-
-```mermaid
-
-flowchart TD
-  start([Start\nUser A must be logged in])
-  --> userOpenChatRoom[/User A opened the group chat room/]
-  --> openChatRoom[[Open the chat room\nshowChatRoomDialog]]
-  --> userOpenMenu[/User A pressed Chat Room Menu Button/]
-  --> systemShowMenu[/System shows chat room menu drawer/]
-  --> userTapInvite[/User tapped `Invite More User`/]
-  --> systemShowSearch[/System shows search bar/]
-  --> userEnterName[/User A enter User B's name/]
-  --> systemGetData[(Get and search user)]
-  --> hasMatches{has matches?}
-  hasMatches --true--> userTap[/User Taps User B/]
-  hasMatches --false--> systemShowsEmpty[/System shows empty search result/]
-  --> systemShowSearch
-  userTap --> systemUpdates[(Add User B's uid in invitedUsers)]
-  --> systemMessageInvited[/System displays\n`User B has been invited`/]
-  --> final([End])
-```
-
-### Process for Accepting/Rejecting Chat Request/Invitation
-
-User B wants to accept an invitation.
-
-```mermaid
-
-flowchart TD
-  start([Start\nUser B must be logged in\nAssuming User B has invitations])
-  --> userOpenChatRoom[/User B opened the\nchat room list screen/]
-  --> loadInvitations{{Load Chat Room Invitations}}
-  --> systemShowsInvitaions[/System shows chat room invitations\nwith accept or reject buttons/]
-  --> userAcceptOrReject{Will user\naccept or reject?}
- userAcceptOrReject --User don't want to do anything yet--> systemDoesNothing[system does nothing]
- --> final
-  userAcceptOrReject --User wants to reject--> userRejectInvitation[/User Taps `Reject`/]
-  --> systemRemoveMember[(Update Room\nRemove uid in invitedUsers\nAdd uid in rejectedUsers)]
-  --> final
-  userAcceptOrReject--User wants to accept--> userAcceptInvitation[/User Taps `Accept`/]
-  --> blockInRoom{User B uid\nin blockedUsers?}
-  blockInRoom --false--> systemAddMember[(Update Room\nRemove uid in invitedUsers\nAdd user in chat room users or members)]
-  --> final([End])
-blockInRoom --true--> systemShowsError[/System shows `Error`/]
-  --> systemShowsInvitaions
-```
-
-
-### Logic for Blocking User in Group Chat
-
-```mermaid
-flowchart TD
-  start([Start\nUser A and User B belongs to a same group\nwhere User A is the master\nUser A logged in])
-  --> openChatRoom[/User A opened the chat Room/]
-  --> openMenu[[showChatRoomDialog]]
-  --> userOpenMenu[/User Pressed Chat Room Menu Button/]
-  --> systemShowMenu[/System show chat room menu drawer/]
-  --> userTapsMemberList[/User A taps member list/]
-  --> systemShowsMemberList[/System shows member list/]
-  --> masterTapsUser[/User A taps User B from the list/]
-  --> isBlocked{user B is blocked?}
-  --false--> systemShowsKickAndBlock[/System shows Kick and Block buttons/]
-  --> masterTapsBlock[/User A taps Block/]
-  --> systemKickMember[System kicks out User B]
-  --> systemAddsInBlock[(Update\nRemove User B in Users\nAdd User B in BlockedUsers)]
-  --> final
-
-  isBlocked--true--> systemShowsUnblock[/System shows Unblock button/]
-  --> masterTapsUnblock[/User A taps Unblock/]
-  --> systemRemoveUserBInBlock[(Update\nRemove User B in BlockUids)]
-  --> final([End])
-
-```
-
-
-### Listing chat roooms
-
-
-- Use `ChatRoomListView` to display the chat rooms.
-- The `ChatRoomListView` uses `CustomScrollView` inside which is a sliver list. It is recommended to set the `ChatRoomListView` widget directly to the body property of a scaffold. 
-  - You can customize the look, of course. But you need to understand how the sliver list view works.
-    - One way you can easily customize is to wrap the `ChatRoomListView` with `Expanded` in Cl]olumn.
-
-
+- See the [ChatInvitationCounter] for details.
 
 Example:
 ```dart
+ChatInvitationCount(builder: (int no) {
+  return Badge(label: Text("$no"));
+}),
+```
+
+
+## Number of New Messages Counting
+
+The new message is maintained in:
+- `chat/settings/<uid>/unread-message-count/<room-id>:0`.
+- `chat-joins/uid/room-id/unread-message-count:0`
+
+Therefore, when there is new message, there fields will increment.
+Moreover, when user reads the new message, it will become `null`.
+
+# Database Strucutre
+
+
+## Chat room
+
+- `/chat/rooms/<room-id>`: This is the path of chat room data.
+
+- `users`: Required. This is a Map of users who joined the room. The key of this map is the uid of the user. The value is boolean. If it's true, the user subscribed the chat room. If it's false, the user has unsubscribed the chat room.
+
+- `single`: Required.
+- `group`: Required.
+- `open`: Required.
+
+- `updatedAt`: Required. This value is updated only when the master updated the chat room. If the master didn't updated the chat room, this value will not be updated.
+  - For instance, When a user enters(joins) the chat room, some of field including users would change. But the values chagned are not from the master. So, the `updatedAt` is not changed.
+
+
+## Chat message
+
+
+- `/chat/messages/<room-id>`: This is the message list of each chat room.
+
+
+- `displayName`: Required. The sender's display name is saved in each message for the performance improvement. And the user's display name is updated in realtime after the name from message has been displayed.
+
+- `photoUrl`: Optional. The sender's photo url is saved in each message for the performance improvement. If the user has no photo url, it can be null. The user's photo url is updated in realtime after it is displayed once from the message.
+
+
+## Chat join
+
+
+- Chat join data will have enough data to display chat room list and chat room app bar. So, it will display data quickly without flickering.
+
+- `/chat/joins/<uid>/<room-id> { ... }`: This is the relation ship bewteen who joined which room.
+  - To list 1:1 chat rooms, it can query like `FirebaseDatabase.instance.ref('chat/joins/' + myUid).orderByChild('singleOrder');`
+- `singleOrder`: Ordering single chat. It only exists if it is single chat.
+- `groupOrder`: Ordering group chat. It only exists if it's group chat.
+- `openOrder`: Ordering open chat. It only exists if it's a open gruop chat. It will also have `groupOrder`.
+
+
+- `name`, `iconUrl` fields are copied from the chat room, and
+  - `displayName`, `photoUrl` fields are copied from the user data.
+  - Note, that copying chat room data and user data looks like that;
+    - It copies the data over again, so it takes more database space.
+      - But we consider this is a minor duplication.
+    - The copied data does not sync when the master updated the chat room and the user change his name and photo.
+      - The copied data will be synced on the next chat message sending.
+
+
+- `displayName`, `photoUrl` is set when the chat is
+  - 1:1 chat,
+    - For the login user, the value of `displayName`, `photoUrl` will be the other user's data.
+    - For the other user, the vlaue of `displayName`, `photoUrl` will be the login user's data.
+  - group chat,
+    - The last message sender's display name and photo url.
+
+
+## Chat setting
+
+
+- Each user can have indivisual settings.
+  - The chat room settings are saved in `/chat/rooms/<room-id>`.
+
+- `chat/settings/<uid>/<room-id>/{ ... }`: Each user's invisual settings for each chat room. For instance, the user can set his own room name, or make the chat room displayed on top with priority settings, etc.
+  - For the convinience of data modeling, we don't make it too much flat. We put many properties in place for the convinience of managing.
+
+
+### Saving unread number of messages.
+
+- `chat/settings/<uid>/unread-message-count { roomA: 3, roomB: 4, ... }`: We make it flat because this value will be often be read and updated.
+
+
+
+
+
+### Changing the chat room name
+
+- `chat/settings/<uid>/name 
+
+
+### Saving push notifications
+
+- Push notification settings for on/off is saved with chat room settings; See chat room settings.
+
+## Chat Room Leaving
+
+- Currently, anyone can leave the chat room inlcuding the master.
+- Once the master leaves, he/she wont have the control anymore.
+
+
+
+## Invited, Rejected Users
+
+
+- The lists of invitation and rejection are set to flat due to the data management.
+
+- `/chat/invited-users/<uid> { room-a: _time_base_order_value_, room-b: ..., ... }`: Users who were invited will be added here.
+- `/chat/rejected-users/<uid> { room-a: _time_base_order_value_, room-b: ..., ... }`: Users who rejected the invitation be added here.
+
+
+## Chat Blocking
+
+Group chat can block the user from the room and it should prevent the user from joining.
+
+When the user is blocked, the user is also removed from the room. The blocker (who is a master) should also remove the chat join of the user.
+
+## Server timestamp
+
+- `/chat/-info/timestap`: This is used by the `getServerTimestamp()` function. See the comment of the function for more details.
+
+
+
+# Widgets
+
+
+## Displaying chat room information
+
+- To display the chat room information, use `ChatRoomDoc` like below.
+  - It rebuilds the widget when data changes in realtime.
+
+```dart
+ChatRoomDoc(
+  ref: ChatService.instance.roomRef(joinDoc.key!),
+  builder: (room) {
+    return ChatRoomListTile(
+      room: room,
+    );
+  },
+)
+```
+
+- If you dig into the ChatRoomDoc, it uses `Value` of the `easy_realtime_database`. It is a simple wraper of the `Value` to help you to write a shorter code.
+
+
+
+## ChatInvitationCounter
+
+
+## ChatInvitationListView
+
+```dart
+ChatInvitationListView(),
 ```
 
 
 
-```mermaid
-flowchart TD
+# Coding Guideline
+
+
+## How to get server timestamp
+
+```dart
+int ts = await getServerTimestamp();
+print('ts: ${DateTime.fromMillisecondsSinceEpoch(ts).toIso8601String()}');
 ```
 
 
+# Tests
+
+
+## Invitation not sent protocol test
+
+- See the `ChatTestService.instance.invitationNotSent`.
+
+Example:
+```dart
+ElevatedButton(
+  onPressed: () => ChatTestService.instance.invitationNotSent(
+    'jp38SPAWRDUfbHoVbIZhY1fJTDM2',
+  ),
+  child: const Text('TEST: invitationNotSent protocol deletion'),
+),
+```
+
+
+# Known Issues
 
 
 
 
-## Known issues and Common problems
-
-
-- If you see a loader (circular progress) in a list (realtime database list view), check if the `databaseURL` is properly set in the firebase initialization configuration.
-  - See the README of `easyusr` for more details of realtime database setup error.
 
 

@@ -12,6 +12,8 @@ class ChatMessage {
     text: 'text',
     url: 'url',
     uid: 'uid',
+    displayName: 'displayName',
+    photoUrl: 'photoUrl',
     createdAt: 'createdAt',
     order: 'order',
     replyTo: 'replyTo',
@@ -21,16 +23,27 @@ class ChatMessage {
     previewTitle: 'previewTitle',
     previewDescription: 'previewDescription',
     previewImageUrl: 'previewImageUrl',
+    protocol: 'protocol',
   );
 
   String id;
+
+  /// [roomId] is not saved in database. It can be found in the path.
   String? roomId;
-  String? uid;
+  String uid;
+  String displayName;
+
+  /// [photoUrl] is pertaining to the sender's profile photo url,
+  /// not the attached photo in message itself.
+  String? photoUrl;
   int createdAt;
   int? updatedAt;
   int? order;
   String? text;
+
+  /// [url] is used for the attached url in the message
   String? url;
+  String? protocol;
   final bool deleted;
 
   String? previewUrl;
@@ -41,16 +54,20 @@ class ChatMessage {
   ChatMessage? replyTo;
 
   bool get isUpdated => updatedAt != null;
+  bool get isProtocol => protocol != null && protocol!.isNotEmpty;
 
   DatabaseReference get ref =>
-      ChatService.instance.messageRef(roomId!).child(id);
+      ChatService.instance.messagesRef.child(roomId!).child(id);
 
   ChatMessage({
     required this.id,
     required this.roomId,
     this.text,
     this.url,
-    this.uid,
+    this.protocol,
+    required this.uid,
+    required this.displayName,
+    required this.photoUrl,
     required this.createdAt,
     required this.order,
     this.replyTo,
@@ -64,19 +81,30 @@ class ChatMessage {
 
   factory ChatMessage.fromSnapshot(DataSnapshot snapshot) {
     final data = Map<String, dynamic>.from(snapshot.value as Map);
-    return ChatMessage.fromJson(data, snapshot.key!);
+    return ChatMessage.fromJson(
+      data,
+      snapshot.key!,
+      snapshot.ref.parent!.key,
+    );
   }
 
-  static ChatMessage fromJson(Map<String, dynamic> json, String id) {
+  static ChatMessage fromJson(
+    Map<String, dynamic> json,
+    String id, [
+    String? roomId,
+  ]) {
     final replyTo = json[field.replyTo] == null
         ? null
         : Map<String, dynamic>.from(json[field.replyTo] as Map);
     return ChatMessage(
       id: id,
-      roomId: json[field.roomId],
+      roomId: roomId,
       text: json[field.text],
       url: json[field.url],
+      protocol: json[field.protocol],
       uid: json[field.uid],
+      displayName: json[field.displayName],
+      photoUrl: json[field.photoUrl],
       createdAt: json[field.createdAt],
       order: json[field.order],
       replyTo: replyTo == null
@@ -93,10 +121,14 @@ class ChatMessage {
     );
   }
 
+  /// Send messages to the chat room.
+  ///
+  /// - It will upload all the chat join relations.
   static Future<ChatMessage> create({
     required String roomId,
     String? text,
     String? url,
+    String? protocol,
     ChatMessage? replyTo,
   }) async {
     final replyToData = replyTo == null
@@ -112,26 +144,34 @@ class ChatMessage {
                   : replyTo.text,
             if (replyTo.url != null) field.url: replyTo.url,
             field.uid: replyTo.uid,
+            field.displayName: replyTo.displayName,
+            field.photoUrl: replyTo.photoUrl,
             field.createdAt: replyTo.createdAt,
             field.deleted: replyTo.deleted,
           };
+    // Don't save room id. It can be found in the path.
     final newMessageData = {
-      field.roomId: roomId,
       if (text != null) field.text: text,
       if (url != null) field.url: url,
+      if (protocol != null) field.protocol: protocol,
       field.uid: FirebaseAuth.instance.currentUser!.uid,
+      field.displayName: my.displayName,
+      field.photoUrl: my.photoUrl,
       field.createdAt: ServerValue.timestamp,
       field.order: DateTime.now().millisecondsSinceEpoch * -1,
       if (replyTo != null) field.replyTo: replyToData,
     };
-    final ref = ChatService.instance.messageRef(roomId).push();
+    final ref = ChatService.instance.messagesRef.child(roomId).push();
     await ref.set(newMessageData);
     return ChatMessage(
       id: ref.key!,
       roomId: roomId,
       text: text,
       url: url,
+      protocol: protocol,
       uid: FirebaseAuth.instance.currentUser!.uid,
+      displayName: my.displayName,
+      photoUrl: my.photoUrl,
       createdAt: DateTime.now().millisecondsSinceEpoch,
       order: DateTime.now().millisecondsSinceEpoch * -1,
       replyTo: replyTo == null
@@ -173,6 +213,7 @@ class ChatMessage {
                 : replyTo.text,
           if (replyTo.url != null) field.url: replyTo.url,
           field.uid: replyTo.uid,
+          field.displayName: replyTo.displayName,
           field.createdAt: replyTo.createdAt,
           field.deleted: replyTo.deleted,
         },

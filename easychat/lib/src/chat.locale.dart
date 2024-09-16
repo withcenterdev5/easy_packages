@@ -1,7 +1,6 @@
 import 'package:easy_locale/easy_locale.dart';
-import 'package:easychat/easychat.dart';
 
-final localeTexts = <String, Map<String, String>>{
+final localeTexts = <String, Map<String, dynamic>>{
   'chat': {
     'en': 'Chat',
     'ko': '채팅',
@@ -81,68 +80,37 @@ final localeTexts = <String, Map<String, String>>{
     'en': 'Chat Room List',
     'ko': '채팅방 목록',
   },
-  'chat room list screen title: ${ChatRoomQuery.allMine.name.toLowerCase()}': {
-    'en': 'My Chats',
-    'ko': '내 채팅',
+  'chat room list screen title: allMyChats': {
+    'en': 'All My Chats',
+    'ko': '나의 채팅방 목록',
   },
-  'chat room list screen title: ${ChatRoomQuery.allMineByTime.name.toLowerCase()}':
-      {
-    'en': 'My Chats Ordered by Time',
-    'ko': '내 채팅 시간 순',
-  },
-  'chat room list screen title: ${ChatRoomQuery.single.name.toLowerCase()}': {
+  'chat room list screen title: singleChats': {
     'en': '1:1 Chats',
-    'ko': '1:1 채팅',
+    'ko': '1:1 채팅방 목록',
   },
-  'chat room list screen title: ${ChatRoomQuery.singleByTime.name.toLowerCase()}':
-      {
-    'en': '1:1 Chats Ordered by Time',
-    'ko': '1:1 채팅 시간 순',
-  },
-  'chat room list screen title: ${ChatRoomQuery.group.name.toLowerCase()}': {
+  'chat room list screen title: groupChats': {
     'en': 'Group Chats',
-    'ko': '그룹 채팅',
+    'ko': '그룹 채팅 목록',
   },
-  'chat room list screen title: ${ChatRoomQuery.groupByTime.name.toLowerCase()}':
-      {
-    'en': 'Group Chats Ordered by Time',
-    'ko': '그룹 채팅 시간 순',
+  'chat room list screen title: openChats': {
+    'en': 'Open Group Chats',
+    'ko': '공개 그룹 채팅 목록',
   },
-  'chat room list screen title: ${ChatRoomQuery.open.name.toLowerCase()}': {
-    'en': 'Open Chats',
-    'ko': '공개 채팅',
+  'chat room list screen option: allMyChats': {
+    'en': 'All My Chats',
+    'ko': '나의 채팅방 목록',
   },
-
-  'chat room list screen option: ${ChatRoomQuery.allMine.name.toLowerCase()}': {
-    'en': 'My Chats',
-    'ko': '내 채팅',
-  },
-  'chat room list screen option: ${ChatRoomQuery.allMineByTime.name.toLowerCase()}':
-      {
-    'en': 'My Chats Ordered by Time',
-    'ko': '내 채팅 시간 순',
-  },
-  'chat room list screen option: ${ChatRoomQuery.single.name.toLowerCase()}': {
+  'chat room list screen option: singleChats': {
     'en': '1:1 Chats',
-    'ko': '1:1 채팅',
+    'ko': '1:1 채팅방 목록',
   },
-  'chat room list screen option: ${ChatRoomQuery.singleByTime.name.toLowerCase()}':
-      {
-    'en': '1:1 Chats Ordered by Time',
-    'ko': '1:1 채팅 시간 순',
-  },
-  'chat room list screen option: ${ChatRoomQuery.group.name.toLowerCase()}': {
+  'chat room list screen option: groupChats': {
     'en': 'Group Chats',
-    'ko': '그룹 채팅',
+    'ko': '그룹 채팅 목록',
   },
-  'chat room list screen option: ${ChatRoomQuery.groupByTime.name.toLowerCase()}':
-      {
-    'en': 'Group Chats Ordered by Time',
-    'ko': '그룹 채팅 시간 순',
-  },
-  'chat room list screen option: ${ChatRoomQuery.open.name.toLowerCase()}': {
-    'en': 'Open Chats',
-    'ko': '공개 채팅',
+  'chat room list screen option: openChats': {
+    'en': 'Open Group Chats',
+    'ko': '공개 그룹 채팅 목록',
   },
   "login to chat": {
     'en': 'Please, login to chat.',
@@ -194,6 +162,18 @@ final localeTexts = <String, Map<String, String>>{
   "no message yet. can send a message.": {
     'en': "No message yet.\nYou can send a message.",
     'ko': "메시지가 없습니다.\n메시지를 보낼 수 있습니다.",
+  },
+  "failed to join in the chat room, because the user is blocked": {
+    'en': 'Failed to join in the chat room, because the user is blocked.',
+    'ko': "사용자가 차단되어 채팅방에 참여하지 못했습니다.",
+  },
+  "failed to join in the chat room, because the user is not invited": {
+    'en': 'Failed to join in the chat room, because the user is not invited.',
+    'ko': "사용자가 초대되지 않았습니다 채팅방에 참여하지 못했습니다.",
+  },
+  "removed from the chat": {
+    'en': 'Removed from the chat',
+    'ko': '채팅방에서 나갔습니다',
   },
 
   // received.chat.room.invite_list.screen.dart
@@ -315,13 +295,9 @@ final localeTexts = <String, Map<String, String>>{
     'en': 'The last message was deleted',
     'ko': '마지막 메시지가 삭제되었습니다',
   },
-  'single chat no message yet': {
-    'en': 'Invitation has NOT been sent.',
-    'ko': '친구 초대가 전송되지 않았습니다.',
-  },
   'no message yet': {
-    'en': 'No message yet. Invitation NOT sent.',
-    'ko': '메시지가 없습니다. 초대가 전송되지 않았습니다.',
+    'en': 'No message yet.',
+    'ko': '메시지가 없습니다.',
   },
 
   // chat.room.list_view.dart
@@ -462,6 +438,51 @@ final localeTexts = <String, Map<String, String>>{
         'You can only send a message to a chat room where you are a member or an invited user, or the room is an open group chat room',
     'ko': "회원이거나 초대된 사용자이거나, 방이 오픈 그룹 채팅방인 경우에만 메시지를 보낼 수 있습니다."
   },
+  "you are not the master to block someone in this room": {
+    'en': "You are not the master to block someone in this room",
+    'ko': "이 방에서 다른 사용자를 차단할 권한이 없습니다.",
+  },
+  "user is already blocked": {
+    'en': "The user is already blocked.",
+    'ko': "해당 사용자는 이미 차단되었습니다.",
+  },
+  "you are not the master to unblock someone in this room": {
+    'en': 'You are not the master to unblock someone in this room',
+    'ko': '이 방에서 다른 사용자의 차단을 해제할 권한이 없습니다.',
+  },
+
+  // invitation
+  'invitation count title': {
+    'en': {
+      'none': 'There is no invitation.',
+      'one': 'You have a new invitation. {count}',
+      'many': 'You have {count} new invitations.',
+    },
+    'ko': {
+      'none': '초대가 없습니다.',
+      'one': '새로운 채팅 친구 초대가 있습니다.',
+      'many': '새로운 채팅 친구 초대가 {count}개 있습니다.',
+    },
+  },
+
+  // protocols ----------------
+
+  'protocol.invitationNotSent': {
+    'en': 'Invitation has NOT been sent.',
+    'ko': '친구 초대가 전송되지 않았습니다.',
+  },
+  'protocol.join': {
+    'en': '{displayName} joined the chat room',
+    'ko': '{displayName}님이 입장하였습니다',
+  },
+  'protocol.left': {
+    'en': '{displayName} left the chat room',
+    'ko': '{displayName}님이 퇴장하였습니다',
+  },
+  'protocol.create': {
+    'en': '{displayName} created the chat room',
+    'ko': '{displayName}님이 채팅방을 생성하였습니다',
+  }
 };
 
 applyChatLocales() async {
