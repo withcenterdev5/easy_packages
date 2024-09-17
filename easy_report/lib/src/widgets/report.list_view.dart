@@ -1,16 +1,15 @@
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:easy_realtime_database/easy_realtime_database.dart';
 import 'package:easy_report/easy_report.dart';
-import 'package:easyuser/easyuser.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_ui_firestore/firebase_ui_firestore.dart';
+import 'package:firebase_database/firebase_database.dart';
+import 'package:firebase_ui_database/firebase_ui_database.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:easy_helpers/easy_helpers.dart';
-import 'package:easy_locale/easy_locale.dart';
 
 class ReportListView extends StatelessWidget {
   const ReportListView({
     super.key,
-    this.separatorBuilder,
     this.scrollDirection = Axis.vertical,
     this.reverse = false,
     this.controller,
@@ -30,7 +29,6 @@ class ReportListView extends StatelessWidget {
     this.emptyBuilder,
   });
 
-  final Widget Function(BuildContext, int)? separatorBuilder;
   final Axis scrollDirection;
   final bool reverse;
   final ScrollController? controller;
@@ -50,9 +48,7 @@ class ReportListView extends StatelessWidget {
   final Widget Function()? emptyBuilder;
   @override
   Widget build(BuildContext context) {
-    return FirestoreListView.separated(
-      separatorBuilder: (context, index) =>
-          separatorBuilder?.call(context, index) ?? const SizedBox.shrink(),
+    return FirebaseDatabaseListView(
       scrollDirection: scrollDirection,
       reverse: reverse,
       controller: controller,
@@ -68,38 +64,49 @@ class ReportListView extends StatelessWidget {
       keyboardDismissBehavior: keyboardDismissBehavior,
       restorationId: restorationId,
       clipBehavior: clipBehavior,
-      query: ReportService.instance.col
-          .where('reporter', isEqualTo: FirebaseAuth.instance.currentUser!.uid),
+      query: ReportService.instance.myReportsRef.orderByKey(),
       itemBuilder: (context, snapshot) {
         final report = Report.fromSnapshot(snapshot);
         return ListTile(
-          leading: UserAvatar.fromUid(uid: report.reportee),
-          title: UserDoc(
-              uid: report.reportee,
-              builder: (user) {
-                if (user == null) {
-                  return const SizedBox.shrink();
-                }
-                return DisplayName(user: user);
-              }),
+          leading: Value.once(
+            ref: FirebaseDatabase.instance
+                .ref(ReportService.instance.userNamePath.replaceFirst('{uid}', report.reportee)),
+            builder: (v, r) {
+              if (v == null) {
+                return const SizedBox.shrink();
+              }
+              return CircleAvatar(child: CachedNetworkImage(imageUrl: (v as String).thumbnail));
+            },
+          ),
+          title: Value.once(
+            ref: FirebaseDatabase.instance
+                .ref(ReportService.instance.userNamePath.replaceFirst('{uid}', report.reportee)),
+            builder: (v, r) {
+              if (v == null) {
+                return const SizedBox.shrink();
+              }
+              return Text('$v');
+            },
+          ),
           subtitle: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(report.reason),
+              Text('${report.reason} ${report.type} ${report.summary}'),
               Text(report.createdAt.yMdjm),
             ],
           ),
           trailing: IconButton(
             icon: const Icon(Icons.delete),
             onPressed: () {
-              report.ref.delete();
+              report.ref.remove();
             },
           ),
         );
       },
-      emptyBuilder: (context) {
-        return emptyBuilder?.call() ??
-            Center(child: Text('report list view is empty'.t));
+      errorBuilder: (context, error, StackTrace? stackTrace) {
+        return Center(
+          child: Text('Error: $error'),
+        );
       },
     );
   }

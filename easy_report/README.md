@@ -1,29 +1,60 @@
 # Easy Report
 
-`easy_report` package provides an easy way of reporting and managing users, posts, comments, photos, chat, and whatsoever.
+`easy_report` package provides an easy way of reporting and managing users, posts, comments, photos, chat, and other user generated contents. It is designed to be used in any kind of app that has user generated contents. It provides a way of reporting users and their contents.
 
-It also provides a way of listing and blocking users.
 
-## TODO
+
+
+# TODO
 
 - Let admin list the reported users and their contents. And decide to block(disbable) their account. So that they cannot use the app.
 
-## Concept
 
-- It does not require typing to avoid the inconveniencing the user. Instead, it ask users to press a button for the reason of the report. And it offers three options. `Spam`, `Abusive`, `Other` and I think these are enough.
 
-- It saves the user's uid and the document reference of the reporting. The document may be in any form (containing any fields).
+# Concept
 
-- In admin screen, it displays the texts and uploads on the screen and let the admin choose to block the user or not.
+- It does not require an input from user to avoid the inconveniencing the user. Instead, it ask users to press a button for the reason of the report. And it offers three options. `Spam`, `Abusive`, `Other` and I think these are enough.
 
-- It can report any document as long as it provides a user uid to blame.
-  - For instance,
-    - For a group chat, there might be many master users and you want to report that that room. You can pass the reference of the chat room document(reference), and choose any of the master users to blame.
-    - The option of `otherUid` is the one who is responsible for that document.
+- It saves
+  - The uid of the user who is responsible for the data. It can be the uid of the user who created the data or the uid of the user who is the admin of the data.
+  - the path of the data. The data can be a path of realtime database or a path of firestore document.
+  - The type of the data. It can be `user`, `post`, `comment`, `photo`, `chat`, etc.
+  - The reason of the report. It can be `spam`, `abusive`, `other`.
+  - The summary of the report. It can be a text that describes the report. Or it can be a text that describes the reason of the report. Or it can be a text that describes the data.
 
-## How to use
 
-### Displaying a report button
+# Database Structure
+
+- `reports/$reportKey` path
+  - `$reportKey` is the node data key.
+    - `reportee` field: The uid of the user who is responsible for the data.
+    - `reporter` field: The uid of the user who created the report. It is usually the login user's uid.
+
+    - `path` field: The path of the data. It can be a path of realtime database or a path of firestore document.
+    - `type` field: The type of the data. It can be `user`, `post`, `comment`, `photo`, `chat`, etc.
+    - `reason` field: The reason of the report. It can be `spam`, `abusive`, `other`.
+    - `summary` field: The summary of the report.
+    - `createdAt` field: The time when the report is created.
+
+- `reports/---key-list/$reportKey` path
+  - `---key-list` is the node data key. It holds all the report Keys. This is for admin's report listing purpose.
+    - `$reportKey` field: This key is the reoprt key. It has uid as value.
+
+
+# How to use
+
+## Initialize
+
+- You may(or may not) want to initialize the `ReportService` before using it.
+- With the `init` method, you can
+  - customize the `onCreate` callback. The `onCreate` callback is called after the report is created. It contains the newly created `report` information.
+  - set the path of user name and photo url. The default path is `user-mirrors/{uid}/name` and `user-mirrors/{uid}/photoUrl`. If your database has different structure, you can set the path with `userNamePath` and `photoUrlPath` parameters.
+
+```dart
+ReportService.instance.init();
+```
+
+## Displaying a report button
 
 You can display report button like this. And call the `report` method.
 
@@ -40,7 +71,7 @@ TextButton(
 ),
 ```
 
-### Displaying the list of blocks
+## Displaying the list of blocks
 
 You can display the list of blocked users.
 
@@ -54,7 +85,7 @@ ElevatedButton(
 ),
 ```
 
-### UI/UX customization
+## UI/UX customization
 
 It's open source. You can simply open the source code of this package and copy/paste/edit the code. The code would be easy enough to re-use.
 
